@@ -1,6 +1,6 @@
 module github.com/otakakot/errifscope
 
-go 1.24.1
+go 1.24.2
 
 require (
 	github.com/gostaticanalysis/testutil v0.6.1
