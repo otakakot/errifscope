@@ -16,6 +16,14 @@ func testf() {
 			return
 		}
 	}
+
+	if err := f(); err != nil {
+		println(err)
+	}
+
+	if err := f(); err != nil {
+		println(err)
+	}
 }
 
 func ff() (string, error) {

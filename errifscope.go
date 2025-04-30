@@ -23,17 +23,22 @@ func run(pass *analysis.Pass) (any, error) {
 	inspect := pass.ResultOf[inspect.Analyzer].(*inspector.Inspector)
 
 	nodeFilter := []ast.Node{
-		(*ast.AssignStmt)(nil),
-		(*ast.IfStmt)(nil),
+		(*ast.BlockStmt)(nil),
 	}
 
-	var previousStmt ast.Node
-
 	inspect.Preorder(nodeFilter, func(node ast.Node) {
-		if ifStmt, ok := node.(*ast.IfStmt); ok {
-			processIfStatement(pass, ifStmt, previousStmt)
+		block := node.(*ast.BlockStmt)
+		for i := 0; i < len(block.List)-1; i++ {
+			assignStmt, ok := block.List[i].(*ast.AssignStmt)
+			if !ok {
+				continue
+			}
+			ifStmt, ok := block.List[i+1].(*ast.IfStmt)
+			if !ok {
+				continue
+			}
+			processIfStatement(pass, ifStmt, assignStmt)
 		}
-		previousStmt = node
 	})
 
 	return nil, nil
