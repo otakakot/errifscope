@@ -1,0 +1,91 @@
+name: create increase tag
+run-name: ${{ github.ref_name }} by @${{ github.actor }} at ${{ github.workflow }}
+on:
+  workflow_dispatch:
+    inputs:
+      semantic:
+        type: choice
+        description: "semantic versioning"
+        default: patch
+        required: true
+        options:
+          - patch
+          - minor
+          - major
+defaults:
+  run:
+    shell: bash
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    outputs:
+      creatable: ${{ steps.check-diff.outputs.creatable }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          fetch-depth: 0 # Required to get tags
+      - name: Check diff
+        id: check-diff
+        run: |
+          latest_tag=$(git tag | sort -r | sed -n '1p')
+          echo "${latest_tag}"
+          latest_commit=$(git rev-parse HEAD)
+          echo "${latest_commit}"
+          diff=$(git diff --name-only ${latest_tag} ${latest_commit} | wc -l)
+          if [[ ${diff} -eq 0 ]]; then
+            echo "creatable=false" >> $GITHUB_OUTPUT
+          else
+            echo "creatable=true" >> $GITHUB_OUTPUT
+          fi
+  tag:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    needs: check
+    if: needs.check.outputs.creatable == 'true'
+    steps:
+      - name: Generate token
+        id: generate-token
+        uses: actions/create-github-app-token@df432ceedc7162793a195dd1713ff69aefc7379e # v2.0.6
+        with:
+          app-id: ${{ secrets.BOT_GITHUB_APP_ID }}
+          private-key: ${{ secrets.BOT_GITHUB_APP_PRIVATE_KEY }}
+      - name: Checkout
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          fetch-depth: 0 # Required to get tags
+          token: ${{ steps.generate-token.outputs.token }}
+      - name: Increase tag
+        id: increase-tag
+        env:
+          GITHUB_TOKEN: ${{ steps.generate-token.outputs.token }}
+        run: |
+          version=$(gh release list --limit 1 --json name | jq -r '.[0].name' | sed 's/v//')
+          IFS='.' read -ra version_array <<< ${version}
+          major=${version_array[0]}
+          minor=${version_array[1]}
+          patch=${version_array[2]}
+          case ${{ github.event.inputs.semantic }} in
+          "major")
+              major=$((major + 1))
+              minor=0
+              patch=0
+              ;;
+          "minor")
+              minor=$((minor + 1))
+              patch=0
+              ;;
+          "patch")
+              patch=$((patch + 1))
+              ;;
+          *)
+              exit 1
+              ;;
+          esac
+          new_version="v${major}.${minor}.${patch}"
+          echo "new_version=${new_version}" >> $GITHUB_OUTPUT
+      - name: Push tag
+        run: |
+          git tag ${{ steps.increase-tag.outputs.new_version }}
+          git push origin ${{ steps.increase-tag.outputs.new_version }}
