@@ -1,76 +1,76 @@
 package test
 
-func f() error {
+func F() error {
 	return nil
 }
 
-func testf() {
-	ferr := f()
+func CallF() {
+	ferr := F()
 	if ferr != nil { // want "ferr can be scoped with if block"
-		return
+		panic(ferr)
 	}
 
-	if ferr := f(); ferr != nil {
-		err := f()
+	if ferr := F(); ferr != nil {
+		err := F()
 		if err != nil { // want "err can be scoped with if block"
-			return
+			panic(err)
 		}
 	}
 
-	if err := f(); err != nil {
-		println(err)
+	if err := F(); err != nil {
+		panic(err)
 	}
 
-	if err := f(); err != nil {
-		println(err)
+	if err := F(); err != nil {
+		panic(err)
 	}
 }
 
-func ff() (string, error) {
+func FF() (string, error) {
 	return "", nil
 }
 
-func testff() {
-	_, fferr := ff()
+func CallFF() {
+	_, fferr := FF()
 	if fferr != nil { // want "fferr can be scoped with if block"
-		return
+		panic(fferr)
 	}
 
-	str, err := ff()
+	str, err := FF()
 	if err != nil {
-		return
+		panic(err)
 	}
 
 	println(str)
 }
 
-func fff() (string, string, error) {
+func FFF() (string, string, error) {
 	return "", "", nil
 }
 
-func testfff() {
-	_, _, ffferr := fff()
+func CallFFF() {
+	_, _, ffferr := FFF()
 	if ffferr != nil { // want "ffferr can be scoped with if block"
-		return
+		panic(ffferr)
 	}
 
-	str1, _, err := fff()
+	str1, _, err := FFF()
 	if err != nil {
-		return
+		panic(err)
 	}
 
 	println(str1)
 
-	_, str2, err := fff()
+	_, str2, err := FFF()
 	if err != nil {
-		return
+		panic(err)
 	}
 
 	println(str2)
 
-	str3, str4, err := fff()
+	str3, str4, err := FFF()
 	if err != nil {
-		return
+		panic(err)
 	}
 
 	println(str3, str4)
