@@ -10,6 +10,11 @@ func CallF() {
 		panic(ferr)
 	}
 
+	ferr = F()
+	if ferr != nil {
+		panic(ferr)
+	}
+
 	if ferr := F(); ferr != nil {
 		err := F()
 		if err != nil { // want "err can be scoped with if block"
@@ -24,6 +29,18 @@ func CallF() {
 	if err := F(); err != nil {
 		panic(err)
 	}
+
+	for range 3 {
+		err := F()
+		if err != nil { // want "err can be scoped with if block"
+			panic(err)
+		}
+	}
+
+	err := F()
+	if err == nil {
+		return
+	}
 }
 
 func FF() (string, error) {
@@ -35,6 +52,8 @@ func CallFF() {
 	if fferr != nil { // want "fferr can be scoped with if block"
 		panic(fferr)
 	}
+
+	_, _ = FF()
 
 	str, err := FF()
 	if err != nil {
@@ -74,4 +93,13 @@ func CallFFF() {
 	}
 
 	println(str3, str4)
+}
+
+var gerr error
+
+func Groval() {
+	gerr = F()
+	if gerr != nil {
+		panic(gerr)
+	}
 }

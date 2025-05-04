@@ -2,6 +2,7 @@ package errifscope
 
 import (
 	"go/ast"
+	"go/token"
 
 	"golang.org/x/tools/go/analysis"
 	"golang.org/x/tools/go/analysis/passes/inspect"
@@ -56,6 +57,10 @@ func processIfStatement(
 
 	assignStmt, ok := previousStmt.(*ast.AssignStmt)
 	if !ok {
+		return
+	}
+
+	if assignStmt.Tok != token.DEFINE {
 		return
 	}
 
