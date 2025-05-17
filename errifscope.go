@@ -29,7 +29,7 @@ func run(pass *analysis.Pass) (any, error) {
 
 	inspect.Preorder(nodeFilter, func(node ast.Node) {
 		block := node.(*ast.BlockStmt)
-		for i := 0; i < len(block.List)-1; i++ {
+		for i := range len(block.List) - 1 {
 			assignStmt, ok := block.List[i].(*ast.AssignStmt)
 			if !ok {
 				continue
