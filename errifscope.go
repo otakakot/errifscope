@@ -29,15 +29,17 @@ func run(pass *analysis.Pass) (any, error) {
 
 	inspect.Preorder(nodeFilter, func(node ast.Node) {
 		block := node.(*ast.BlockStmt)
-		for i := range len(block.List) - 1 {
-			assignStmt, ok := block.List[i].(*ast.AssignStmt)
+		for index := range block.List[:len(block.List)-1] {
+			assignStmt, ok := block.List[index].(*ast.AssignStmt)
 			if !ok {
 				continue
 			}
-			ifStmt, ok := block.List[i+1].(*ast.IfStmt)
+
+			ifStmt, ok := block.List[index+1].(*ast.IfStmt)
 			if !ok {
 				continue
 			}
+
 			processIfStatement(pass, ifStmt, assignStmt)
 		}
 	})
