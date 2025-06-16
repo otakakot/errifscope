@@ -1,6 +1,7 @@
 package errifscope
 
 import (
+	"fmt"
 	"go/ast"
 	"go/token"
 
@@ -73,7 +74,10 @@ func processIfStatement(
 
 	if isErrorCheckValid(pass, binaryExpr, errExpr) {
 		errIdent := errExpr.(*ast.Ident)
-		pass.Reportf(ifStmt.Pos(), msg, errIdent.Name)
+		pass.Report(analysis.Diagnostic{
+			Pos:     ifStmt.Pos(),
+			Message: fmt.Sprintf(msg, errIdent.Name),
+		})
 	}
 }
 
